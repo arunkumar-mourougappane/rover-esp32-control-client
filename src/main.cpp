@@ -3,6 +3,7 @@
 #include <WiFi.h>
 
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 const String ROVER_AP_SSID = String("MOONBASE-II");
 const String ROVER_AP_PASS_PHRASE = String("Trypt1c0n$");
@@ -36,18 +37,18 @@ void setup()
    log_i("Gatway address: %s", hostname.c_str());
 }
 
-void perform_http_get(String hostUrl)
+void perform_http_get(String hostUrl, String& contents)
 {
    // wait for WiFi connection
    if (WiFi.status() == WL_CONNECTED)
    {
       HTTPClient http;
 
-      log_i("[HTTP] begin...\n");
+      log_i("[HTTP] begin...");
 
       http.begin(hostUrl.c_str()); // HTTP
 
-      log_i("[HTTP] GET...\n");
+      log_i("[HTTP] GET...");
       // start connection and send HTTP header
       int httpCode = http.GET();
 
@@ -55,32 +56,70 @@ void perform_http_get(String hostUrl)
       if (httpCode > 0)
       {
          // HTTP header has been send and Server response header has been handled
-         log_i("[HTTP] GET... code: %d\n", httpCode);
+         log_i("[HTTP] GET... code: %d", httpCode);
 
          // file found at server
          if (httpCode == HTTP_CODE_OK)
          {
             String payload = http.getString();
+#ifdef PRINT_HTTP_CONTENT
             Serial.println("Payload: ");
             Serial.println(payload);
+#endif
+            contents=payload;
          }
       }
       else
       {
-         log_e("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+         log_e("[HTTP] GET... failed, error: %s", http.errorToString(httpCode).c_str());
       }
 
       http.end();
    }
 }
 
+
+void perform_http_get(String hostUrl)
+{
+   String contents;
+   perform_http_get(hostUrl, contents);
+}
+
+void printJSONContents(String jsonString) {
+   if (jsonString.length() == 0 ){
+      return;
+   }
+   JsonDocument doc;
+   DeserializationError error = deserializeJson(doc, jsonString);
+   if (error) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      return;
+   }
+#ifdef ENABLE_TELEPLOT
+   Serial.printf(">AccX:%f\n", doc["accX"].as<float>());
+   Serial.printf(">AccY:%f\n", doc["accY"].as<float>());
+   Serial.printf(">AccZ:%f\n", doc["accZ"].as<float>());
+   Serial.printf(">GyroX:%f\n", doc["gyroX"].as<float>());
+   Serial.printf(">GyroY:%f\n", doc["gyroY"].as<float>());
+   Serial.printf(">GyroZ:%f\n", doc["gyroZ"].as<float>());
+   Serial.printf(">temp:%f\n", doc["temperature"].as<float>());
+#endif
+}
+
 void loop()
 {
    String hostUrl = String("http://") + hostname;
-   String commanOndUrl = hostUrl + String("/on");
+   String commanOndUrl = hostUrl + String("/led-on");
    perform_http_get(commanOndUrl);
-   delay(250);
-   String commandOffUrl = hostUrl + String("/off");
+   delay(75);
+   String commandOffUrl = hostUrl + String("/led-off");
    perform_http_get(commandOffUrl);
-   delay(250);
+   delay(75);
+   String imudataUrl = hostUrl + String("/all-imu-data");
+   String contents;
+   perform_http_get(imudataUrl, contents);
+   // Serial.println(contents);
+   printJSONContents(contents);
+   delay(75);
 }
