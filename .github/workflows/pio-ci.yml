@@ -20,5 +20,8 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO Project
-        run: pio run 
+      - name: Build Project esp32s3 Feather Reverse TFT
+        run: pio run -e esp32s3_feather_reversetft
+
+      - name: Build Project esp32s3 Wroom
+        run: pio run -e esp32s3_wroom
