@@ -1,0 +1,19 @@
+{
+    "name": "GrpcClient",
+    "version": "1.0.0",
+    "description": "gRPC client implementation for ESP32 rover control",
+    "keywords": "grpc, esp32, client, rover",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "authors": [
+        {
+            "name": "Arunkumar Mourougappane",
+            "email": "amouroug@buffalo.edu"
+        }
+    ],
+    "license": "MIT",
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}
