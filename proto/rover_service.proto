@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package rover;
+
+// Service definition for rover control and sensor data
+service RoverService {
+    // LED Control RPCs
+    rpc TurnLedOn(LedControlRequest) returns (LedControlResponse);
+    rpc TurnLedOff(LedControlRequest) returns (LedControlResponse);
+    
+    // IMU Data RPCs
+    rpc GetAllImuData(ImuDataRequest) returns (ImuDataResponse);
+    rpc GetSpecificImuData(SpecificImuDataRequest) returns (ImuDataResponse);
+    
+    // Joystick Control RPCs
+    rpc SendJoystickData(JoystickDataRequest) returns (JoystickDataResponse);
+    
+    // Stream IMU data continuously
+    rpc StreamImuData(ImuDataRequest) returns (stream ImuDataResponse);
+}
+
+// LED Control Messages
+message LedControlRequest {
+    // Empty request - no parameters needed
+}
+
+message LedControlResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// IMU Data Messages
+message ImuDataRequest {
+    // Empty request for all data
+}
+
+message SpecificImuDataRequest {
+    string parameter = 1; // "acc", "gyro", "accx", "accy", "accz", "gyrox", "gyroy", "gyroz", "temperature"
+}
+
+message ImuDataResponse {
+    // Accelerometer data
+    float acc_x = 1;
+    float acc_y = 2;
+    float acc_z = 3;
+    
+    // Gyroscope data
+    float gyro_x = 4;
+    float gyro_y = 5;
+    float gyro_z = 6;
+    
+    // Temperature data
+    float temperature = 7;
+    
+    // Metadata
+    int64 timestamp = 8;
+    bool success = 9;
+    string error_message = 10;
+}
+
+// Joystick Control Messages
+message JoystickDataRequest {
+    // Left joystick analog values (0-4095 for 12-bit ADC)
+    int32 left_x = 1;     // Left joystick X axis
+    int32 left_y = 2;     // Left joystick Y axis
+    
+    // Right joystick analog values (0-4095 for 12-bit ADC)
+    int32 right_x = 3;    // Right joystick X axis
+    int32 right_y = 4;    // Right joystick Y axis
+    
+    // Optional button states (if joysticks have push buttons)
+    bool left_button = 5;  // Left joystick button pressed
+    bool right_button = 6; // Right joystick button pressed
+    
+    // Metadata
+    int64 timestamp = 7;
+}
+
+message JoystickDataResponse {
+    bool success = 1;
+    string message = 2;
+    int64 timestamp = 3;
+}
